@@ -1,5 +1,6 @@
 #include <iostream>
 #include "SFML/Graphics.hpp"
+#include "Player.h"
 
 sf::Vector2f findIntercept(sf::Vector2f line1Point1, sf::Vector2f line1Point2, sf::Vector2f line2Point1, sf::Vector2f line2Point2) {
     float denominator = ((line2Point2.y - line2Point1.y) * (line1Point2.x - line1Point1.x)) - ((line2Point2.x - line2Point1.x) * (line1Point2.y - line1Point1.y));
@@ -84,12 +85,24 @@ int main() {
     player2ScoreText.setString(std::to_wstring(player2Score));
     player2ScoreText.setCharacterSize(100);
 
+    // Create player 3
+    sf::RectangleShape player3Sprite(sf::Vector2f(20, 200));
+    player3Sprite.setPosition(sf::Vector2f(50, windowSize.y * 0.5 - player3Sprite.getSize().y * 0.5));
+    Player player3(&player3Sprite, true);
+
+    // Create player 4
+    sf::RectangleShape player4Sprite(sf::Vector2f(20, 200));
+    player4Sprite.setPosition(sf::Vector2f(windowSize.x - 75, windowSize.y * 0.5 - player4Sprite.getSize().y * 0.5));
+    Player player4(&player4Sprite, true);
+
     // Create Player 1
     sf::RectangleShape player1(sf::Vector2f(20, 200));
+    player1.setFillColor(sf::Color::Black);
     player1.setPosition(sf::Vector2f(50, windowSize.y * 0.5 - player1.getSize().y * 0.5));
 
     // Create Player 2
     sf::RectangleShape player2(sf::Vector2f(20, 200));
+    player2.setFillColor(sf::Color::Black);
     player2.setPosition(sf::Vector2f(windowSize.x - 75, windowSize.y * 0.5 - player2.getSize().y * 0.5));
 
     // Create puck
@@ -158,18 +171,64 @@ int main() {
                     window.close();
                     break;
                 case sf::Event::KeyPressed:
-                    switch (event.key.code) {
+                    switch(event.key.code) {
                         // Close window when escape button is pressed
                         case sf::Keyboard::Escape:
                             window.close();
                             break;
+                        // Update player 1's velocity if any control keys are pressed
+                        /* case sf::Keyboard::W:
+                        case sf::Keyboard::A:
+                            player3.setVelocity(sf::Vector2f(1.0f, 90));
+                            break;
+                        case sf::Keyboard::S:
+                        case sf::Keyboard::D:
+                            player3.setVelocity(sf::Vector2f(1.0f, 270));
+                            break;
+                        // Update player 2's velocity if any control keys are pressed and player is controllable
+                            case sf::Keyboard::Up:
+                            case sf::Keyboard::Left:
+                                break;
+                            case sf::Keyboard::Down:
+                            case sf::Keyboard::Right:
+                                break; */
                     }
                     break;
+                /* case sf::Event::KeyReleased:
+                    switch(event.key.code) {
+                        // Stop player 1's movements if any if any control keys are released
+                        case sf::Keyboard::W:
+                        case sf::Keyboard::A:
+                            player3.setVelocity(sf::Vector2f(0, 0));
+                            break;
+                        case sf::Keyboard::S:
+                        case sf::Keyboard::D:
+                            player3.setVelocity(sf::Vector2f(0, 0));
+                            break;
+                    }
+                    break; */
+            }
+        }
+
+        // Player 3 controls
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+            player3.setVelocity(sf::Vector2f(1.0f, 90));
+        } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+            player3.setVelocity(sf::Vector2f(1.0f, 270));
+        }
+
+        // Player 4 controls
+        // Make sure player 4 is controllable before checking for player controls
+        if(player4.isControllable()) {
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+                player4.setVelocity(sf::Vector2f(1.0f, 90));
+            } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+                player4.setVelocity(sf::Vector2f(1.0f, 270));
             }
         }
 
         // Player 1 controls
-        sf::Vector2f player1Pos = player1.getPosition();
+        /* sf::Vector2f player1Pos = player1.getPosition();
         // If 'W' or 'A' are being pressed, move player one upward
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
             float moveDelta = -timeElapsed.asMilliseconds();
@@ -192,10 +251,10 @@ int main() {
             if(puckPaddleIntercept.x != NULL && puckVelocity.x < 0) {
                 puckVelocity.y *= puckVelocity.y > 0 ? 0.5 : 1.5;
             }
-        }
+        } */
 
         // Player 2 controls
-        sf::Vector2f player2Pos = player2.getPosition();
+        /* sf::Vector2f player2Pos = player2.getPosition();
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
             float moveDelta = -timeElapsed.asMilliseconds();
             // If player reaches top of window view, prevent movement beyond
@@ -211,7 +270,11 @@ int main() {
                 moveDelta = windowSize.y - player2Pos.y - player2.getSize().y;
             }
             player2.move(sf::Vector2f(0, moveDelta));
-        }
+        } */
+
+        // Update players and puck sprites
+        player3.update(timeElapsed.asMilliseconds());
+        player4.update(timeElapsed.asMilliseconds());
 
         // Clear window and redraw all items after updates
 
@@ -221,6 +284,8 @@ int main() {
         window.draw(player2ScoreText);
         window.draw(player1);
         window.draw(player2);
+        window.draw(player3Sprite);
+        window.draw(player4Sprite);
         window.draw(puck);
 
         window.display();
