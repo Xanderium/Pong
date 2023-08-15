@@ -1,6 +1,7 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 
+// Player class for handling player movement and controlls
 class Player {
 	public:
 		Player(sf::RectangleShape *sprite, bool isControllable);

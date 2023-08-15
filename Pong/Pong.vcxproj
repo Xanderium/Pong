@@ -135,9 +135,11 @@
   <ItemGroup>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Pong.cpp" />
+    <ClCompile Include="Puck.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Puck.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
