@@ -1,6 +1,9 @@
+#define _USE_MATH_DEFINES
+
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include <cmath>
 #include "SFML/Graphics.hpp"
 #include "Player.h"
 #include "Puck.h"
@@ -104,13 +107,15 @@ int main() {
     sf::CircleShape puckSprite(10);
     puckSprite.setPosition(windowSize.x * 0.5 - puckSprite.getRadius(), windowSize.y * 0.5 - puckSprite.getRadius());
     int randNum = rand() % 100;
-    float direction = rand() % 15;
+    float direction = rand() % 60;
     if(randNum < 50) {
-        direction += 165;
+        direction += 150;
     } else {
-        direction = (int) (direction + 345) % 360;
+        direction += (int) (direction + 330) % 360;
     }
-    Puck puck2(&puckSprite, sf::Vector2f(0.75f, direction));
+    float xVelocity = 1.0f * cos(direction * M_PI / 180);
+    float yVelocity = 1.0f * sin(direction * M_PI / 180);
+    Puck puck2(&puckSprite, sf::Vector2f(xVelocity, yVelocity));
 
     // Create Player 1
     sf::RectangleShape player1(sf::Vector2f(20, 200));
@@ -253,9 +258,9 @@ int main() {
                 player4.setVelocity(sf::Vector2f(1.0f, 270));
             }
         } else {
-            if(puckSprite.getPosition().y < player4Sprite.getPosition().y + player4Sprite.getSize().y * 0.5) {
+            if(puckSprite.getPosition().y < player4Sprite.getPosition().y - puckSprite.getRadius()) {
                 player4.setVelocity(sf::Vector2f(1.0f, 90));
-            } else if(puckSprite.getPosition().y > player4Sprite.getPosition().y + player4Sprite.getSize().y * 0.5) {
+            } else if(puckSprite.getPosition().y > player4Sprite.getPosition().y + player4Sprite.getSize().y + puckSprite.getRadius()) {
                 player4.setVelocity(sf::Vector2f(1.0f, 270));
             }
         }
@@ -306,28 +311,104 @@ int main() {
         } */
 
         // Update players and puck sprites
+        
+        // Update paddles
+        player3.update(timeElapsed.asMilliseconds());
+        player4.update(timeElapsed.asMilliseconds());
+        // Get puck's next position
+        sf::Vector2f newPuckPosition;
+        newPuckPosition.x = puckSprite.getPosition().x + puck2.getVelocity().x * timeElapsed.asMilliseconds();
+        newPuckPosition.y = puckSprite.getPosition().y + puck2.getVelocity().y * timeElapsed.asMilliseconds();
+        // Check for puck collisions
+        // Check for collision with right side of left paddle
+        if(newPuckPosition.x - puckSprite.getRadius() < player3Sprite.getPosition().x + player3Sprite.getSize().x
+            && newPuckPosition.y + puckSprite.getRadius() > player3Sprite.getPosition().y
+            && newPuckPosition.y - puckSprite.getRadius() < player3Sprite.getPosition().y + player3Sprite.getSize().y) {
+            float collisionTime = (player3Sprite.getPosition().x + player3Sprite.getPosition().x - (puckSprite.getPosition().x - puckSprite.getRadius())) /
+                (newPuckPosition.x - puckSprite.getRadius() - (puckSprite.getPosition().x - puckSprite.getRadius()));
+            float xAtCollision = puckSprite.getPosition().x + ((1 - collisionTime) * puckSprite.getPosition().x + collisionTime * newPuckPosition.x);
+            float xAtCompletion = xAtCollision + (newPuckPosition.x - xAtCollision);
+            newPuckPosition.x = xAtCompletion;
+            puck2.setVelocity(sf::Vector2f(-puck2.getVelocity().x, puck2.getVelocity().y));
+        // Check for collision with left side of right paddle
+        } else if(newPuckPosition.x + puckSprite.getRadius() > player4Sprite.getPosition().x
+            && newPuckPosition.y + puckSprite.getRadius() > player4Sprite.getPosition().y
+            && newPuckPosition.y - puckSprite.getRadius() < player4Sprite.getPosition().y + player4Sprite.getSize().y) {
+            float collisionTime = (player4Sprite.getPosition().x - (puckSprite.getPosition().x + puckSprite.getRadius())) /
+                (newPuckPosition.x + puckSprite.getRadius() - (puckSprite.getPosition().x + puckSprite.getRadius()));
+            float xAtCollision = ((1 - collisionTime) * puckSprite.getPosition().x + collisionTime * newPuckPosition.x);
+            float xAtCompletion = xAtCollision - (newPuckPosition.x - xAtCollision);
+            newPuckPosition.x = xAtCompletion;
+            puck2.setVelocity(sf::Vector2f(-puck2.getVelocity().x, puck2.getVelocity().y));
+        }
+        // Check for collision with top wall
+        if(newPuckPosition.y - puckSprite.getRadius() < 0) {
+            float collisionTime = -(puckSprite.getPosition().y - puckSprite.getRadius()) /
+                (newPuckPosition.y - puckSprite.getRadius() - (puckSprite.getPosition().y - puckSprite.getRadius()));
+            float yAtCollision = puckSprite.getPosition().y + ((1 - collisionTime) * puckSprite.getPosition().y + collisionTime * newPuckPosition.y);
+            float yAtCompletion = yAtCollision + (newPuckPosition.y - yAtCollision);
+            newPuckPosition.y = yAtCompletion;
+            puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, -puck2.getVelocity().y));
+        // Check for collision with bottom wall
+        } else if(newPuckPosition.y + puckSprite.getRadius() > windowSize.y) {
+            float collisionTime = (windowSize.y - (puckSprite.getPosition().y + puckSprite.getRadius())) /
+                (newPuckPosition.y + puckSprite.getRadius() - (puckSprite.getPosition().y + puckSprite.getRadius()));
+            float yAtCollision = ((1 - collisionTime) * (puckSprite.getPosition().y + puckSprite.getRadius()) + collisionTime * (newPuckPosition.y + puckSprite.getRadius()));
+            float yAtCompletion = yAtCollision - (newPuckPosition.y - yAtCollision);
+            newPuckPosition.y = yAtCompletion;
+            puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, -puck2.getVelocity().y));
+        }
+        puckSprite.setPosition(newPuckPosition);
+        float magnitude = sqrt(puck2.getVelocity().x * puck2.getVelocity().x + puck2.getVelocity().y * puck2.getVelocity().y);
+        std::cout << "Magnitude: " << magnitude << std::endl;
+        magnitude += 0.00005f * timeElapsed.asMilliseconds();
+        float direction = acos(puck2.getVelocity().y / magnitude);
+        std::cout << "Direction: " << direction << std::endl;
+        float newVelocityX = magnitude * sin(direction);
+        float newVelocityY = magnitude * cos(direction);
+        std::cout << "New Velocity: (" << newVelocityX << ", " << newVelocityY << ")";
+        // puck2.setVelocity(sf::Vector2f(newVelocityX, newVelocityY));
+        // Check for collision with left or right wall
+        if(newPuckPosition.x < 0 || newPuckPosition.x > windowSize.x) {
+            float direction = rand() % 60;
+            if(puck2.getVelocity().x < 0) {
+                player2Score++;
+                player2ScoreText.setString(std::to_wstring(player2Score));
+                direction += 150;
+            } else {
+                player1Score++;
+                player1ScoreText.setString(std::to_wstring(player1Score));
+                direction += (int) (direction + 330) % 360;
+            }
+            puckSprite.setPosition(sf::Vector2f(windowSize.x * 0.5 - puckSprite.getRadius(), windowSize.y * 0.5 - puckSprite.getRadius()));
+            float xVelocity = 1.0f * cos(direction * M_PI / 180);
+            float yVelocity = 1.0f * sin(direction * M_PI / 180);
+            puck2.setVelocity(sf::Vector2f(xVelocity, yVelocity));
+        }
+
+        // Update players and puck sprites
         sf::Vector2f player3Pos = player3Sprite.getPosition();
         sf::Vector2f player4Pos = player4Sprite.getPosition();
         sf::Vector2f puckPos = puckSprite.getPosition();
-        player3.update(timeElapsed.asMilliseconds());
-        player4.update(timeElapsed.asMilliseconds());
-        sf::Vector2f puckDelta = puck2.update(timeElapsed.asMilliseconds());
+        // player3.update(timeElapsed.asMilliseconds());
+        // player4.update(timeElapsed.asMilliseconds());
+        // sf::Vector2f puckDelta = puck2.update(timeElapsed.asMilliseconds());
 
         // Detect collission between puck and top and bottom walls
-        if(puckSprite.getPosition().y - puckSprite.getRadius() < 0) {
+        /* if (puckSprite.getPosition().y - puckSprite.getRadius() < 0) {
             puckSprite.setPosition(sf::Vector2f(puckSprite.getPosition().x, puckSprite.getRadius()));
             puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, -puck2.getVelocity().y));
         } else if(puckSprite.getPosition().y + puckSprite.getRadius() > 1080) {
             puckSprite.setPosition(sf::Vector2f(puckSprite.getPosition().x, 1080 - puckSprite.getRadius()));
             puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, puck2.getVelocity().y - 2 * (puck2.getVelocity().y - 180)));
-        }
+        } */
         
         // Detect collission between puck and player paddles
-        sf::Vector3f intercept;
+        /* sf::Vector3f intercept;
         if(puck2.getVelocity().y > 90 && puck2.getVelocity().y < 270) {
-            intercept = findPuckPaddleIntercept(puckSprite, player3Sprite, puckDelta.x, puckDelta.y);
+            // intercept = findPuckPaddleIntercept(puckSprite, player3Sprite, puckDelta.x, puckDelta.y);
         } else {
-            intercept = findPuckPaddleIntercept(puckSprite, player4Sprite, puckDelta.x, puckDelta.y);
+            // intercept = findPuckPaddleIntercept(puckSprite, player4Sprite, puckDelta.x, puckDelta.y);
         }
         if(intercept.x != NULL) {
             puckSprite.setPosition(sf::Vector2f(intercept.x, intercept.y));
@@ -345,12 +426,12 @@ int main() {
                     puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, puck2.getVelocity().y - 2 * (puck2.getVelocity().y - 270)));
                     break;
             }
-        }
+        } */
 
         // Detect if a player scores a point
-        if(puckSprite.getPosition().x - puckSprite.getRadius() < 0 || puckSprite.getPosition().x + puckSprite.getRadius() > windowSize.x) {
+        /* if (puckSprite.getPosition().x - puckSprite.getRadius() < 0 || puckSprite.getPosition().x + puckSprite.getRadius() > windowSize.x) {
             puckSprite.setPosition(sf::Vector2f(windowSize.x * 0.5 - puckSprite.getRadius(), windowSize.y * 0.5 - puckSprite.getRadius()));
-            direction = rand() % 15;
+            direction = rand() % 30;
             if(puck2.getVelocity().y < 90 || puck2.getVelocity().y > 270) {
                 player1Score++;
                 player1ScoreText.setString(std::to_wstring(player1Score));
@@ -361,7 +442,7 @@ int main() {
                 direction = (int) (direction + 345) % 360;
             }
             puck2.setVelocity(sf::Vector2f(0.75f, direction));
-        }
+        } */
 
         // Clear window and redraw all items after updates
 

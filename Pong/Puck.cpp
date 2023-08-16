@@ -9,11 +9,6 @@ Puck::Puck(sf::CircleShape *sprite, sf::Vector2f initialVelocity) {
 }
 
 void Puck::setVelocity(sf::Vector2f velocity) {
-	if(velocity.y < 0) {
-		velocity.y = 360 - abs(((int) velocity.y) % -360);
-	} else if(velocity.y > 360) {
-		velocity.y = ((int) velocity.y) % 360;
-	}
 	this->velocity = velocity;
 }
 
