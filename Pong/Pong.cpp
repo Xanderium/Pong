@@ -138,65 +138,14 @@ int main() {
         // Update paddles
         player1.update(timeElapsed.asMilliseconds());
         player2.update(timeElapsed.asMilliseconds());
-        // Get puck's next position
-        sf::Vector2f newPuckPosition;
-        newPuckPosition.x = puckSprite.getPosition().x + puck2.getVelocity().x * timeElapsed.asMilliseconds();
-        newPuckPosition.y = puckSprite.getPosition().y + puck2.getVelocity().y * timeElapsed.asMilliseconds();
+        // Calculate puck's next position
+        sf::Vector2f nextPuckPosition = puck2.getNextPosition(timeElapsed.asMilliseconds());
         // Check for puck collisions
-        // Check for collision with right side of left paddle
-        if(newPuckPosition.x - puckSprite.getRadius() < player1Sprite.getPosition().x + player1Sprite.getSize().x
-            && newPuckPosition.y + puckSprite.getRadius() > player1Sprite.getPosition().y
-            && newPuckPosition.y - puckSprite.getRadius() < player1Sprite.getPosition().y + player1Sprite.getSize().y) {
-            float collisionTime = (player1Sprite.getPosition().x + player1Sprite.getPosition().x - (puckSprite.getPosition().x - puckSprite.getRadius())) /
-                (newPuckPosition.x - puckSprite.getRadius() - (puckSprite.getPosition().x - puckSprite.getRadius()));
-            float xAtCollision = puckSprite.getPosition().x + ((1 - collisionTime) * puckSprite.getPosition().x + collisionTime * newPuckPosition.x);
-            float xAtCompletion = xAtCollision + (newPuckPosition.x - xAtCollision);
-            newPuckPosition.x = xAtCompletion;
-            puck2.setVelocity(sf::Vector2f(-puck2.getVelocity().x, puck2.getVelocity().y));
-
-            // Play puck collision sound
-            puckCollisionSoundPitch = ((float) (rand() % 10)) / 10 + 0.5f;
-            puckCollisionSound.setPitch(puckCollisionSoundPitch);
-            puckCollisionSound.play();
-        // Check for collision with left side of right paddle
-        } else if(newPuckPosition.x + puckSprite.getRadius() > player2Sprite.getPosition().x
-            && newPuckPosition.y + puckSprite.getRadius() > player2Sprite.getPosition().y
-            && newPuckPosition.y - puckSprite.getRadius() < player2Sprite.getPosition().y + player2Sprite.getSize().y) {
-            float collisionTime = (player2Sprite.getPosition().x - (puckSprite.getPosition().x + puckSprite.getRadius())) /
-                (newPuckPosition.x + puckSprite.getRadius() - (puckSprite.getPosition().x + puckSprite.getRadius()));
-            float xAtCollision = ((1 - collisionTime) * puckSprite.getPosition().x + collisionTime * newPuckPosition.x);
-            float xAtCompletion = xAtCollision - (newPuckPosition.x - xAtCollision);
-            newPuckPosition.x = xAtCompletion;
-            puck2.setVelocity(sf::Vector2f(-puck2.getVelocity().x, puck2.getVelocity().y));
-
-            // Play puck collision sound
-            puckCollisionSoundPitch = ((float) (rand() % 10)) / 10 + 0.5f;
-            puckCollisionSound.setPitch(puckCollisionSoundPitch);
-            puckCollisionSound.play();
-        }
-        // Check for collision with top wall
-        if(newPuckPosition.y - puckSprite.getRadius() < 0) {
-            float collisionTime = -(puckSprite.getPosition().y - puckSprite.getRadius()) /
-                (newPuckPosition.y - puckSprite.getRadius() - (puckSprite.getPosition().y - puckSprite.getRadius()));
-            float yAtCollision = puckSprite.getPosition().y + ((1 - collisionTime) * puckSprite.getPosition().y + collisionTime * newPuckPosition.y);
-            float yAtCompletion = yAtCollision + (newPuckPosition.y - yAtCollision);
-            newPuckPosition.y = yAtCompletion;
-            puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, -puck2.getVelocity().y));
-
-            // Play puck collision sound
-            puckCollisionSoundPitch = ((float) (rand() % 10)) / 10 + 0.5f;
-            puckCollisionSound.setPitch(puckCollisionSoundPitch);
-            puckCollisionSound.play();
-        // Check for collision with bottom wall
-        } else if(newPuckPosition.y > windowSize.y) {
-            float collisionTime = (windowSize.y - (puckSprite.getPosition().y + puckSprite.getRadius())) /
-                (newPuckPosition.y + puckSprite.getRadius() - (puckSprite.getPosition().y + puckSprite.getRadius()));
-            float yAtCollision = ((1 - collisionTime) * (puckSprite.getPosition().y + puckSprite.getRadius()) + collisionTime * (newPuckPosition.y + puckSprite.getRadius()));
-            float yAtCompletion = yAtCollision - (newPuckPosition.y - yAtCollision);
-            newPuckPosition.y = yAtCompletion;
-            puck2.setVelocity(sf::Vector2f(puck2.getVelocity().x, -puck2.getVelocity().y));
-
-            // Play puck collision sound
+        sf::Vector2f puckPosAfterCollision = puck2.detectCollision(player1Sprite, player2Sprite, nextPuckPosition);
+        // Update puck's position to calculated next position
+        puckSprite.setPosition(nextPuckPosition);
+        // If there was a collision, play puck collision sound
+        if(nextPuckPosition.x != puckPosAfterCollision.x || nextPuckPosition.y != puckPosAfterCollision.y) {
             puckCollisionSoundPitch = ((float) (rand() % 10)) / 10 + 0.5f;
             puckCollisionSound.setPitch(puckCollisionSoundPitch);
             puckCollisionSound.play();
@@ -206,7 +155,6 @@ int main() {
         // c^2 - a^2 - b^2 = 2ab * cos(theta)
         // (c^2 - a^2 - b^2) / 2ab = cos(theta)
         // arccos(c^2 - a^2 - b^2) = theta
-        puckSprite.setPosition(newPuckPosition);
         float magnitude = sqrt((long double) (puck2.getVelocity().x * puck2.getVelocity().x + puck2.getVelocity().y * puck2.getVelocity().y));
         magnitude += 0.00005f * timeElapsed.asMilliseconds();
         float direction = acos(puck2.getVelocity().y / magnitude);
@@ -214,7 +162,7 @@ int main() {
         float newVelocityY = magnitude * cos(direction);
         puck2.setVelocity(sf::Vector2f(newVelocityX, newVelocityY));
         // Check for collision with left or right wall
-        if(newPuckPosition.x < 0 || newPuckPosition.x > windowSize.x) {
+        if(nextPuckPosition.x < 0 || nextPuckPosition.x > windowSize.x) {
             float direction = rand() % 60;
             if(puck2.getVelocity().x < 0) {
                 player2Score++;
