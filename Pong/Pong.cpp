@@ -9,57 +9,6 @@
 #include "Player.h"
 #include "Puck.h"
 
-sf::Vector2f findIntercept(sf::Vector2f line1Point1, sf::Vector2f line1Point2, sf::Vector2f line2Point1, sf::Vector2f line2Point2) {
-    float denominator = ((line2Point2.y - line2Point1.y) * (line1Point2.x - line1Point1.x)) - ((line2Point2.x - line2Point1.x) * (line1Point2.y - line1Point1.y));
-    if (denominator != 0) {
-        float ua = (((line2Point2.x - line2Point1.x) * (line1Point1.y - line2Point1.y)) - ((line2Point2.y - line2Point1.y) * (line1Point1.x - line2Point1.x))) / denominator;
-        if (ua >= 0 && ua <= 1) {
-            float ub = (((line1Point2.x - line1Point1.x) * (line1Point1.y - line2Point1.y)) - ((line1Point2.y - line1Point1.y) * (line1Point1.x - line2Point1.x))) / denominator;
-            if (ub >= 0 && ub <= 1) {
-                float x = line1Point1.x + (ua * (line1Point2.x - line1Point1.x));
-                float y = line1Point1.y + (ua * (line1Point2.y - line1Point1.y));
-                return sf::Vector2f(x, y);
-            }
-        }
-    }
-    return sf::Vector2f(NULL, NULL);
-}
-
-sf::Vector3f findPuckPaddleIntercept(sf::CircleShape puck, sf::RectangleShape paddle, float deltaX, float deltaY) {
-    sf::Vector2f intercept = sf::Vector2f(NULL, NULL);
-    int interceptSide = -1;
-    sf::Vector2f puckPos = puck.getPosition();
-    sf::Vector2f newPuckPos = sf::Vector2f(puckPos.x + deltaX, puckPos.y + deltaY);
-    if(deltaX < 0) {
-        interceptSide = 1;
-        intercept = findIntercept(puckPos, newPuckPos,
-            sf::Vector2f(paddle.getPosition().x + paddle.getSize().x + puck.getRadius(), paddle.getPosition().y - puck.getRadius()),
-            sf::Vector2f(paddle.getPosition().x + paddle.getSize().x + puck.getRadius(), paddle.getPosition().y + paddle.getSize().y + puck.getRadius()));
-    }
-    else if(deltaX > 0) {
-        interceptSide = 3;
-        intercept = findIntercept(puckPos, newPuckPos,
-            sf::Vector2f(paddle.getPosition().x - puck.getRadius(), paddle.getPosition().y - puck.getRadius()),
-            sf::Vector2f(paddle.getPosition().x - puck.getRadius(), paddle.getPosition().y + paddle.getSize().y + puck.getRadius()));
-    }
-    if(intercept.x == NULL) {
-        if(deltaY < 0) {
-            interceptSide = 2;
-            intercept = findIntercept(puckPos, newPuckPos,
-                sf::Vector2f(paddle.getPosition().x - puck.getRadius(), paddle.getPosition().y + paddle.getSize().y + puck.getRadius()),
-                sf::Vector2f(paddle.getPosition().x + paddle.getSize().x + puck.getRadius(), paddle.getPosition().y + paddle.getSize().y + puck.getRadius()));
-        }
-        else if(deltaY > 0) {
-            interceptSide = 0;
-            intercept = findIntercept(puckPos, newPuckPos,
-                sf::Vector2f(paddle.getPosition().x - puck.getRadius(), paddle.getPosition().y + puck.getRadius()),
-                sf::Vector2f(paddle.getPosition().x + paddle.getSize().x + puck.getRadius(), paddle.getPosition().y + puck.getRadius()));
-        }
-    }
-    sf::Vector3f puckPaddleIntercept = sf::Vector3f(intercept.x, intercept.y, interceptSide);
-    return puckPaddleIntercept;
-}
-
 int main() {
     std::cout << "Hello World!\n";
 
@@ -102,15 +51,15 @@ int main() {
     player2ScoreText.setString(std::to_wstring(player2Score));
     player2ScoreText.setCharacterSize(100);
 
-    // Create player 3
-    sf::RectangleShape player3Sprite(sf::Vector2f(20, 200));
-    player3Sprite.setPosition(sf::Vector2f(50, windowSize.y * 0.5 - player3Sprite.getSize().y * 0.5));
-    Player player3(&player3Sprite, true);
+    // Create player 1
+    sf::RectangleShape player1Sprite(sf::Vector2f(20, 200));
+    player1Sprite.setPosition(sf::Vector2f(50, windowSize.y * 0.5 - player1Sprite.getSize().y * 0.5));
+    Player player1(&player1Sprite, true);
 
-    // Create player 4
-    sf::RectangleShape player4Sprite(sf::Vector2f(20, 200));
-    player4Sprite.setPosition(sf::Vector2f(windowSize.x - 75, windowSize.y * 0.5 - player4Sprite.getSize().y * 0.5));
-    Player player4(&player4Sprite, false);
+    // Create player 2
+    sf::RectangleShape player2Sprite(sf::Vector2f(20, 200));
+    player2Sprite.setPosition(sf::Vector2f(windowSize.x - 75, windowSize.y * 0.5 - player2Sprite.getSize().y * 0.5));
+    Player player2(&player2Sprite, true);
 
     // Create puck
     sf::CircleShape puckSprite(10);
@@ -153,51 +102,52 @@ int main() {
         }
 
         // Player 3 controls
-        if(player3.isControllable()) {
+        // Make sure player 2 is controllable before checking for player controls
+        if(player1.isControllable()) {
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-                player3.setVelocity(sf::Vector2f(1.0f, 90));
+                player1.setVelocity(sf::Vector2f(1.0f, 90));
             } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-                player3.setVelocity(sf::Vector2f(1.0f, 270));
+                player1.setVelocity(sf::Vector2f(1.0f, 270));
             }
         } else {
-            if(puckSprite.getPosition().y < player3Sprite.getPosition().y + player3Sprite.getSize().y * 0.5) {
-                player3.setVelocity(sf::Vector2f(1.0f, 90));
-            } else if(puckSprite.getPosition().y > player3Sprite.getPosition().y + player3Sprite.getSize().y * 0.5) {
-                player3.setVelocity(sf::Vector2f(1.0f, 270));
+            if(puckSprite.getPosition().y < player1Sprite.getPosition().y + player1Sprite.getSize().y * 0.5 - puckSprite.getRadius()) {
+                player1.setVelocity(sf::Vector2f(1.0f, 90));
+            } else if(puckSprite.getPosition().y > player1Sprite.getPosition().y + player1Sprite.getSize().y * 0.5 + puckSprite.getRadius()) {
+                player1.setVelocity(sf::Vector2f(1.0f, 270));
             }
         }
 
-        // Player 4 controls
-        // Make sure player 4 is controllable before checking for player controls
-        if(player4.isControllable()) {
+        // Player 2 controls
+        // Make sure player 2 is controllable before checking for player controls
+        if(player2.isControllable()) {
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-                player4.setVelocity(sf::Vector2f(1.0f, 90));
+                player2.setVelocity(sf::Vector2f(1.0f, 90));
             } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-                player4.setVelocity(sf::Vector2f(1.0f, 270));
+                player2.setVelocity(sf::Vector2f(1.0f, 270));
             }
         } else {
-            if(puckSprite.getPosition().y < player4Sprite.getPosition().y - puckSprite.getRadius()) {
-                player4.setVelocity(sf::Vector2f(1.0f, 90));
-            } else if(puckSprite.getPosition().y > player4Sprite.getPosition().y + player4Sprite.getSize().y + puckSprite.getRadius()) {
-                player4.setVelocity(sf::Vector2f(1.0f, 270));
+            if(puckSprite.getPosition().y < player2Sprite.getPosition().y + player2Sprite.getSize().y * 0.5 - puckSprite.getRadius()) {
+                player2.setVelocity(sf::Vector2f(1.0f, 90));
+            } else if(puckSprite.getPosition().y > player2Sprite.getPosition().y + player2Sprite.getSize().y * 0.5 + puckSprite.getRadius()) {
+                player2.setVelocity(sf::Vector2f(1.0f, 270));
             }
         }
 
         // Update players and puck sprites
         
         // Update paddles
-        player3.update(timeElapsed.asMilliseconds());
-        player4.update(timeElapsed.asMilliseconds());
+        player1.update(timeElapsed.asMilliseconds());
+        player2.update(timeElapsed.asMilliseconds());
         // Get puck's next position
         sf::Vector2f newPuckPosition;
         newPuckPosition.x = puckSprite.getPosition().x + puck2.getVelocity().x * timeElapsed.asMilliseconds();
         newPuckPosition.y = puckSprite.getPosition().y + puck2.getVelocity().y * timeElapsed.asMilliseconds();
         // Check for puck collisions
         // Check for collision with right side of left paddle
-        if(newPuckPosition.x - puckSprite.getRadius() < player3Sprite.getPosition().x + player3Sprite.getSize().x
-            && newPuckPosition.y + puckSprite.getRadius() > player3Sprite.getPosition().y
-            && newPuckPosition.y - puckSprite.getRadius() < player3Sprite.getPosition().y + player3Sprite.getSize().y) {
-            float collisionTime = (player3Sprite.getPosition().x + player3Sprite.getPosition().x - (puckSprite.getPosition().x - puckSprite.getRadius())) /
+        if(newPuckPosition.x - puckSprite.getRadius() < player1Sprite.getPosition().x + player1Sprite.getSize().x
+            && newPuckPosition.y + puckSprite.getRadius() > player1Sprite.getPosition().y
+            && newPuckPosition.y - puckSprite.getRadius() < player1Sprite.getPosition().y + player1Sprite.getSize().y) {
+            float collisionTime = (player1Sprite.getPosition().x + player1Sprite.getPosition().x - (puckSprite.getPosition().x - puckSprite.getRadius())) /
                 (newPuckPosition.x - puckSprite.getRadius() - (puckSprite.getPosition().x - puckSprite.getRadius()));
             float xAtCollision = puckSprite.getPosition().x + ((1 - collisionTime) * puckSprite.getPosition().x + collisionTime * newPuckPosition.x);
             float xAtCompletion = xAtCollision + (newPuckPosition.x - xAtCollision);
@@ -209,17 +159,15 @@ int main() {
             puckCollisionSound.setPitch(puckCollisionSoundPitch);
             puckCollisionSound.play();
         // Check for collision with left side of right paddle
-        } else if(newPuckPosition.x + puckSprite.getRadius() > player4Sprite.getPosition().x
-            && newPuckPosition.y + puckSprite.getRadius() > player4Sprite.getPosition().y
-            && newPuckPosition.y - puckSprite.getRadius() < player4Sprite.getPosition().y + player4Sprite.getSize().y) {
-            float collisionTime = (player4Sprite.getPosition().x - (puckSprite.getPosition().x + puckSprite.getRadius())) /
+        } else if(newPuckPosition.x + puckSprite.getRadius() > player2Sprite.getPosition().x
+            && newPuckPosition.y + puckSprite.getRadius() > player2Sprite.getPosition().y
+            && newPuckPosition.y - puckSprite.getRadius() < player2Sprite.getPosition().y + player2Sprite.getSize().y) {
+            float collisionTime = (player2Sprite.getPosition().x - (puckSprite.getPosition().x + puckSprite.getRadius())) /
                 (newPuckPosition.x + puckSprite.getRadius() - (puckSprite.getPosition().x + puckSprite.getRadius()));
             float xAtCollision = ((1 - collisionTime) * puckSprite.getPosition().x + collisionTime * newPuckPosition.x);
             float xAtCompletion = xAtCollision - (newPuckPosition.x - xAtCollision);
             newPuckPosition.x = xAtCompletion;
-            std::cout << std::endl << "Pre-collision Velocity: (" << puck2.getVelocity().x << ", " << puck2.getVelocity().y << ")" << std::endl;
             puck2.setVelocity(sf::Vector2f(-puck2.getVelocity().x, puck2.getVelocity().y));
-            std::cout << "Post-collision Velocity: (" << puck2.getVelocity().x << ", " << puck2.getVelocity().y << ")" << std::endl;
 
             // Play puck collision sound
             puckCollisionSoundPitch = ((float) (rand() % 10)) / 10 + 0.5f;
@@ -283,22 +231,14 @@ int main() {
             puck2.setVelocity(sf::Vector2f(xVelocity, yVelocity));
         }
 
-        // Update players and puck sprites
-        sf::Vector2f player3Pos = player3Sprite.getPosition();
-        sf::Vector2f player4Pos = player4Sprite.getPosition();
-        sf::Vector2f puckPos = puckSprite.getPosition();
-        // player3.update(timeElapsed.asMilliseconds());
-        // player4.update(timeElapsed.asMilliseconds());
-        // sf::Vector2f puckDelta = puck2.update(timeElapsed.asMilliseconds());
-
         // Clear window and redraw all items after updates
 
         window.clear();
 
         window.draw(player1ScoreText);
         window.draw(player2ScoreText);
-        window.draw(player3Sprite);
-        window.draw(player4Sprite);
+        window.draw(player1Sprite);
+        window.draw(player2Sprite);
         window.draw(puckSprite);
 
         window.display();
