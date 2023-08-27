@@ -74,7 +74,7 @@ int main() {
     direction /= 10;
     float xVelocity = 1.0f * cos(direction * M_PI / 180);
     float yVelocity = -1.0f * sin(direction * M_PI / 180);
-    Puck puck2(&puckSprite, sf::Vector2f(xVelocity, yVelocity));
+    Puck puck(&puckSprite, sf::Vector2f(xVelocity, yVelocity));
 
     while(window.isOpen()) {
 
@@ -101,7 +101,7 @@ int main() {
             }
         }
 
-        // Player 3 controls
+        // Player 2 controls
         // Make sure player 2 is controllable before checking for player controls
         if(player1.isControllable()) {
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
@@ -139,11 +139,11 @@ int main() {
         player1.update(timeElapsed.asMilliseconds());
         player2.update(timeElapsed.asMilliseconds());
         // Calculate puck's next position
-        sf::Vector2f nextPuckPosition = puck2.getNextPosition(timeElapsed.asMilliseconds());
+        sf::Vector2f nextPuckPosition = puck.getNextPosition(timeElapsed.asMilliseconds());
         // Check for puck collisions
-        sf::Vector2f puckPosAfterCollision = puck2.detectCollision(player1Sprite, player2Sprite, nextPuckPosition);
+        sf::Vector2f puckPosAfterCollision = puck.detectCollision(player1Sprite, player2Sprite, nextPuckPosition);
         // Update puck's position to calculated next position
-        puckSprite.setPosition(nextPuckPosition);
+        puckSprite.setPosition(puckPosAfterCollision);
         // If there was a collision, play puck collision sound
         if(nextPuckPosition.x != puckPosAfterCollision.x || nextPuckPosition.y != puckPosAfterCollision.y) {
             puckCollisionSoundPitch = ((float) (rand() % 10)) / 10 + 0.5f;
@@ -155,16 +155,16 @@ int main() {
         // c^2 - a^2 - b^2 = 2ab * cos(theta)
         // (c^2 - a^2 - b^2) / 2ab = cos(theta)
         // arccos(c^2 - a^2 - b^2) = theta
-        float magnitude = sqrt((long double) (puck2.getVelocity().x * puck2.getVelocity().x + puck2.getVelocity().y * puck2.getVelocity().y));
+        float magnitude = sqrt((long double) (puck.getVelocity().x * puck.getVelocity().x + puck.getVelocity().y * puck.getVelocity().y));
         magnitude += 0.00005f * timeElapsed.asMilliseconds();
-        float direction = acos(puck2.getVelocity().y / magnitude);
-        float newVelocityX = magnitude * sin(direction) * (puck2.getVelocity().x > 0 ? 1 : -1);
+        float direction = acos(puck.getVelocity().y / magnitude);
+        float newVelocityX = magnitude * sin(direction) * (puck.getVelocity().x > 0 ? 1 : -1);
         float newVelocityY = magnitude * cos(direction);
-        puck2.setVelocity(sf::Vector2f(newVelocityX, newVelocityY));
+        puck.setVelocity(sf::Vector2f(newVelocityX, newVelocityY));
         // Check for collision with left or right wall
         if(nextPuckPosition.x < 0 || nextPuckPosition.x > windowSize.x) {
             float direction = rand() % 60;
-            if(puck2.getVelocity().x < 0) {
+            if(puck.getVelocity().x < 0) {
                 player2Score++;
                 player2ScoreText.setString(std::to_wstring(player2Score));
                 direction += 150;
@@ -176,7 +176,7 @@ int main() {
             puckSprite.setPosition(sf::Vector2f(windowSize.x * 0.5 - puckSprite.getRadius(), windowSize.y * 0.5 - puckSprite.getRadius()));
             float xVelocity = 1.0f * cos(direction * M_PI / 180);
             float yVelocity = 1.0f * sin(direction * M_PI / 180);
-            puck2.setVelocity(sf::Vector2f(xVelocity, yVelocity));
+            puck.setVelocity(sf::Vector2f(xVelocity, yVelocity));
         }
 
         // Clear window and redraw all items after updates
