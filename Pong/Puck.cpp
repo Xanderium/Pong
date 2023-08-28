@@ -86,7 +86,6 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y + player1Size.y);
 	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y - puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y - puckRadius), wallPoint1, wallPoint2);
 	if(intersection.x != NULL) {
-		std::cout << "asdf" << std::endl;
 		nextPosition.y = intersection.y - (nextPosition.y - puckRadius - intersection.y) + puckRadius;
 		velocity = sf::Vector2f(velocity.x, -velocity.y);
 	}
@@ -96,7 +95,6 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y);
 	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
 	if(intersection.x != NULL) {
-		std::cout << "fdsa" << std::endl;
 		nextPosition.y = intersection.y - (nextPosition.y + puckRadius - intersection.y) - puckRadius;
 		velocity = sf::Vector2f(velocity.x, -velocity.y);
 	}
@@ -119,7 +117,6 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	wallPoint2 = sf::Vector2f(player2Position.x + player2Size.x, player2Position.y + player1Size.y);
 	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y - puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y - puckRadius), wallPoint1, wallPoint2);
 	if (intersection.x != NULL) {
-		std::cout << "asdf" << std::endl;
 		nextPosition.y = intersection.y - (nextPosition.y - puckRadius - intersection.y) + puckRadius;
 		velocity = sf::Vector2f(velocity.x, -velocity.y);
 	}
@@ -129,7 +126,6 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	wallPoint2 = sf::Vector2f(player2Position.x + player2Size.x, player2Position.y);
 	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
 	if (intersection.x != NULL) {
-		std::cout << "fdsa" << std::endl;
 		nextPosition.y = intersection.y - (nextPosition.y + puckRadius - intersection.y) - puckRadius;
 		velocity = sf::Vector2f(velocity.x, -velocity.y);
 	}
