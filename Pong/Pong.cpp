@@ -101,8 +101,8 @@ int main() {
             }
         }
 
-        // Player 2 controls
-        // Make sure player 2 is controllable before checking for player controls
+        // Player 1 controls
+        // Make sure player 1 is controllable before checking for player controls
         if(player1.isControllable()) {
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
                 player1.setVelocity(sf::Vector2f(1.0f, 90));
@@ -110,9 +110,9 @@ int main() {
                 player1.setVelocity(sf::Vector2f(1.0f, 270));
             }
         } else {
-            if(puckSprite.getPosition().y < player1Sprite.getPosition().y + player1Sprite.getSize().y * 0.5 - puckSprite.getRadius()) {
+            if(puckSprite.getPosition().y + puckSprite.getRadius() < player1Sprite.getPosition().y + player1Sprite.getSize().y * 0.5 - puckSprite.getRadius()) {
                 player1.setVelocity(sf::Vector2f(1.0f, 90));
-            } else if(puckSprite.getPosition().y > player1Sprite.getPosition().y + player1Sprite.getSize().y * 0.5 + puckSprite.getRadius()) {
+            } else if(puckSprite.getPosition().y - puckSprite.getRadius() > player1Sprite.getPosition().y + player1Sprite.getSize().y * 0.5 + puckSprite.getRadius()) {
                 player1.setVelocity(sf::Vector2f(1.0f, 270));
             }
         }
@@ -126,9 +126,9 @@ int main() {
                 player2.setVelocity(sf::Vector2f(1.0f, 270));
             }
         } else {
-            if(puckSprite.getPosition().y < player2Sprite.getPosition().y + player2Sprite.getSize().y * 0.5 - puckSprite.getRadius()) {
+            if(puckSprite.getPosition().y + puckSprite.getRadius() < player2Sprite.getPosition().y + player2Sprite.getSize().y * 0.5 - puckSprite.getRadius()) {
                 player2.setVelocity(sf::Vector2f(1.0f, 90));
-            } else if(puckSprite.getPosition().y > player2Sprite.getPosition().y + player2Sprite.getSize().y * 0.5 + puckSprite.getRadius()) {
+            } else if(puckSprite.getPosition().y - puckSprite.getRadius() > player2Sprite.getPosition().y + player2Sprite.getSize().y * 0.5 + puckSprite.getRadius()) {
                 player2.setVelocity(sf::Vector2f(1.0f, 270));
             }
         }
@@ -150,17 +150,21 @@ int main() {
             puckCollisionSound.setPitch(puckCollisionSoundPitch);
             puckCollisionSound.play();
         }
+
+        // Increase ball's velocity
+        
         // c = sqrt(a^2 + b^2 - 2ab * cos(theta))
         // c^2 = a^2 + b^2 - 2ab * cos(theta)
         // c^2 - a^2 - b^2 = 2ab * cos(theta)
         // (c^2 - a^2 - b^2) / 2ab = cos(theta)
         // arccos(c^2 - a^2 - b^2) = theta
         float magnitude = sqrt((long double) (puck.getVelocity().x * puck.getVelocity().x + puck.getVelocity().y * puck.getVelocity().y));
-        magnitude += 0.00005f * timeElapsed.asMilliseconds();
         float direction = acos(puck.getVelocity().y / magnitude);
+        magnitude += 0.00005f * timeElapsed.asMilliseconds();
         float newVelocityX = magnitude * sin(direction) * (puck.getVelocity().x > 0 ? 1 : -1);
         float newVelocityY = magnitude * cos(direction);
         puck.setVelocity(sf::Vector2f(newVelocityX, newVelocityY));
+
         // Check for collision with left or right wall
         if(nextPuckPosition.x < 0 || nextPuckPosition.x > windowSize.x) {
             float direction = rand() % 60;

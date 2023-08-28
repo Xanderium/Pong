@@ -20,13 +20,13 @@ void Player::update(float timeDelta) {
 		if(sprite->getGlobalBounds().top - velocity.x * timeDelta < 0) {
 			moveDelta = -sprite->getGlobalBounds().top;
 		} else {
-			moveDelta = -timeDelta;
+			moveDelta = -timeDelta * velocity.x;
 		}
 	} else if(velocity.y == 270) {
 		if(sprite->getPosition().y + sprite->getSize().y + velocity.x * timeDelta > 1080) {
 			moveDelta = 1080 - sprite->getPosition().y - sprite->getSize().y;
 		} else {
-			moveDelta = timeDelta;
+			moveDelta = timeDelta * velocity.x;
 		}
 	}
 	sprite->move(sf::Vector2f(0, moveDelta));

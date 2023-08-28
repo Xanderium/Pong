@@ -66,37 +66,40 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	sf::Vector2f player1Size = player1Sprite.getSize();
 
 	// Check left paddle right wall
-
 	// Get line for left paddle's right wall
 	wallPoint1 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y);
 	wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y + player1Size.y);
 	
 	// Find intersection between both lines
-	intersection = findIntersection(sf::Vector2f(puckPosition.x - puckRadius, puckPosition.y), sf::Vector2f(nextPosition.x - puckRadius, nextPosition.y), wallPoint1, wallPoint2);
+	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
 	
 	if(intersection.x != NULL) {
-		nextPosition.x = intersection.x - (nextPosition.x - puckRadius - intersection.x) + puckRadius;
+		nextPosition.x = intersection.x - (nextPosition.x - intersection.x);
 		velocity = sf::Vector2f(-velocity.x, velocity.y);
 	}
 
 	// * Repeat as such for all other walls the puck can collide with
 
 	// Check left paddle bottom wall
-	wallPoint1 = sf::Vector2f(player1Position.x, player1Position.y + player1Size.y);
-	wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y + player1Size.y);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y - puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y - puckRadius), wallPoint1, wallPoint2);
-	if(intersection.x != NULL) {
-		nextPosition.y = intersection.y - (nextPosition.y - puckRadius - intersection.y) + puckRadius;
-		velocity = sf::Vector2f(velocity.x, -velocity.y);
+	if(velocity.y < 0) {
+		wallPoint1 = sf::Vector2f(player1Position.x, player1Position.y + player1Size.y);
+		wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y + player1Size.y);
+		intersection = findIntersection(sf::Vector2f(puckPosition.x + puckRadius, puckPosition.y), sf::Vector2f(nextPosition.x + puckRadius, nextPosition.y), wallPoint1, wallPoint2);
+		if(intersection.x != NULL) {
+			nextPosition.y = intersection.y - (nextPosition.y - intersection.y);
+			velocity = sf::Vector2f(velocity.x, -velocity.y);
+		}
 	}
 
 	// Check left paddle top wall
-	wallPoint1 = sf::Vector2f(player1Position.x, player1Position.y);
-	wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
-	if(intersection.x != NULL) {
-		nextPosition.y = intersection.y - (nextPosition.y + puckRadius - intersection.y) - puckRadius;
-		velocity = sf::Vector2f(velocity.x, -velocity.y);
+	if(velocity.y > 0) {
+		wallPoint1 = sf::Vector2f(player1Position.x, player1Position.y);
+		wallPoint2 = sf::Vector2f(player1Position.x + player1Size.x, player1Position.y);
+		intersection = findIntersection(sf::Vector2f(puckPosition.x + puckRadius, puckPosition.y + 2 * puckRadius), sf::Vector2f(nextPosition.x + puckRadius, nextPosition.y + 2 * puckRadius), wallPoint1, wallPoint2);
+		if(intersection.x != NULL) {
+			nextPosition.y = intersection.y - (nextPosition.y + 2 * puckRadius - intersection.y) - 2 * puckRadius;
+			velocity = sf::Vector2f(velocity.x, -velocity.y);
+		}
 	}
 
 	// Check for collisions with right paddle
@@ -106,28 +109,32 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	// Check right paddle left wall
 	wallPoint1 = sf::Vector2f(player2Position.x, player2Position.y);
 	wallPoint2 = sf::Vector2f(player2Position.x, player2Position.y + player2Size.y);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x + puckRadius, puckPosition.y), sf::Vector2f(nextPosition.x + puckRadius, nextPosition.y), wallPoint1, wallPoint2);
+	intersection = findIntersection(sf::Vector2f(puckPosition.x + 2 * puckRadius, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x + 2 * puckRadius, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
 	if(intersection.x != NULL) {
-		nextPosition.x = intersection.x - (nextPosition.x + puckRadius - intersection.x) - puckRadius;
+		nextPosition.x = intersection.x - (nextPosition.x + 2 * puckRadius - intersection.x) - 2 * puckRadius;
 		velocity = sf::Vector2f(-velocity.x, velocity.y);
 	}
 	
 	// Check right paddle bottom wall
-	wallPoint1 = sf::Vector2f(player2Position.x, player2Position.y + player1Size.y);
-	wallPoint2 = sf::Vector2f(player2Position.x + player2Size.x, player2Position.y + player1Size.y);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y - puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y - puckRadius), wallPoint1, wallPoint2);
-	if (intersection.x != NULL) {
-		nextPosition.y = intersection.y - (nextPosition.y - puckRadius - intersection.y) + puckRadius;
-		velocity = sf::Vector2f(velocity.x, -velocity.y);
+	if(velocity.y < 0) {
+		wallPoint1 = sf::Vector2f(player2Position.x, player2Position.y + player1Size.y);
+		wallPoint2 = sf::Vector2f(player2Position.x + player2Size.x, player2Position.y + player1Size.y);
+		intersection = findIntersection(sf::Vector2f(puckPosition.x + puckRadius, puckPosition.y), sf::Vector2f(nextPosition.x + puckRadius, nextPosition.y), wallPoint1, wallPoint2);
+		if (intersection.x != NULL) {
+			nextPosition.y = intersection.y - (nextPosition.y - intersection.y);
+			velocity = sf::Vector2f(velocity.x, -velocity.y);
+		}
 	}
 
 	// Check right paddle top wall
-	wallPoint1 = sf::Vector2f(player2Position.x, player2Position.y);
-	wallPoint2 = sf::Vector2f(player2Position.x + player2Size.x, player2Position.y);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
-	if (intersection.x != NULL) {
-		nextPosition.y = intersection.y - (nextPosition.y + puckRadius - intersection.y) - puckRadius;
-		velocity = sf::Vector2f(velocity.x, -velocity.y);
+	if(velocity.y > 0) {
+		wallPoint1 = sf::Vector2f(player2Position.x, player2Position.y);
+		wallPoint2 = sf::Vector2f(player2Position.x + player2Size.x, player2Position.y);
+		intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + 2 * puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + 2 * puckRadius), wallPoint1, wallPoint2);
+		if (intersection.x != NULL) {
+			nextPosition.y = intersection.y - (nextPosition.y + 2 * puckRadius - intersection.y) - 2 * puckRadius;
+			velocity = sf::Vector2f(velocity.x, -velocity.y);
+		}
 	}
 
 	// Check for collisions with top and bottom walls
@@ -135,18 +142,18 @@ sf::Vector2f Puck::detectCollision(sf::RectangleShape player1Sprite, sf::Rectang
 	// Check top wall
 	wallPoint1 = sf::Vector2f(0, 0);
 	wallPoint2 = sf::Vector2f(2160, 0);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y - puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y - puckRadius), wallPoint1, wallPoint2);
+	intersection = findIntersection(sf::Vector2f(puckPosition.x + puckRadius, puckPosition.y), sf::Vector2f(nextPosition.x + puckRadius, nextPosition.y), wallPoint1, wallPoint2);
 	if (intersection.x != NULL) {
-		nextPosition.y = intersection.y - (nextPosition.y - puckRadius - intersection.y) + puckRadius;
+		nextPosition.y = intersection.y - (nextPosition.y - intersection.y);
 		velocity = sf::Vector2f(velocity.x, -velocity.y);
 	}
 
 	// Check bottom wall
 	wallPoint1 = sf::Vector2f(0, 1080);
 	wallPoint2 = sf::Vector2f(2160, 1080);
-	intersection = findIntersection(sf::Vector2f(puckPosition.x, puckPosition.y + puckRadius), sf::Vector2f(nextPosition.x, nextPosition.y + puckRadius), wallPoint1, wallPoint2);
+	intersection = findIntersection(sf::Vector2f(puckPosition.x + puckRadius, puckPosition.y + 2 * puckRadius), sf::Vector2f(nextPosition.x + puckRadius, nextPosition.y + 2 * puckRadius), wallPoint1, wallPoint2);
 	if(intersection.x != NULL) {
-		nextPosition.y = intersection.y - (nextPosition.y + puckRadius - intersection.y) - puckRadius;
+		nextPosition.y = intersection.y - (nextPosition.y + 2 * puckRadius - intersection.y) - 2 * puckRadius;
 		velocity = sf::Vector2f(velocity.x, -velocity.y);
 	}
 
